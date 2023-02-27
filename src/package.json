@@ -1,0 +1,15 @@
+{
+  "name": "servertp11",
+  "version": "1.0.0",
+  "description": "serveur de jeu mmi",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^6.6.0",
+    "nodemon": "^2.0.19"
+  }
+}
