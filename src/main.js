@@ -6,7 +6,9 @@ let mongoose = require('mongoose'); // Interface MongoDB
 
 const app = Express();
 const SERVER_PORT = 3000; // Le port d'écoute du serveur
-const mongoURL = 'mongodb://localhost/mmidb'; // URL pour se connecter à MongoDB
+const MONGO_SERVER = process.env.MONGO_SERVER || 'localhost' ;
+const MONGO_DATABASE = process.env.MONGO_DATABASE || 'mmidb' ;
+const mongoURL = 'mongodb://'+MONGO_SERVER+'/'+MONGO_DATABASE; // URL pour se connecter à MongoDB
 
 // Connexion à MongoDB
 mongoose.connect(mongoURL, { useNewUrlParser: true });
