@@ -3,24 +3,37 @@ services:
     image: mongo
     volumes:
       - ./mongodb:/data/db
-    ports:
-      - 27017:27017
+    networks:
+      - mongo
   
   crud:
-    image: node:14-buster
-    volumes:
-      - ./src:/usr/src
-    working_dir: /usr/src
+    image: ghcr.io/mmi-s4/exemple_crud:main
+    build: ./src
     environment:
       - MONGO_SERVER=mongodb
       - MONGO_DATABASE=mmidb
-    ports:
-      - 3000:3000
-    command: npx nodemon -L /usr/src/main.js
+    networks:
+      - nginx
+      - mongo
+    depends_on:
+      - mongodb
 
-  mongo-express:
-    image: mongo-express
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongodb
+  nginx:
+    image: nginx
     ports:
-      - 8081:8081
+      - 80:80
+    configs:
+      - source: nginx-config
+        target: /etc/nginx/conf.d/crud.conf
+    networks:
+      - nginx
+    depends_on:
+      - crud
+
+configs:
+  nginx-config:
+    file: ./nginx/crud.conf
+
+networks:
+  nginx:
+  mongo:

@@ -1,0 +1,26 @@
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - ./mongodb:/data/db
+    ports:
+      - 27017:27017
+  
+  crud:
+    image: node:14-buster
+    volumes:
+      - ./src:/usr/src
+    working_dir: /usr/src
+    environment:
+      - MONGO_SERVER=mongodb
+      - MONGO_DATABASE=mmidb
+    ports:
+      - 3000:3000
+    command: npx nodemon -L /usr/src/main.js
+
+  mongo-express:
+    image: mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    ports:
+      - 8081:8081
