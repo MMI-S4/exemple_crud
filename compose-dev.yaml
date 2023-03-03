@@ -5,6 +5,13 @@ services:
       - ./mongodb:/data/db
     ports:
       - 27017:27017
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "'db.runCommand({ping:1})'"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
   
   crud:
     image: node:14-buster
@@ -17,6 +24,9 @@ services:
     ports:
       - 3000:3000
     command: npx nodemon -L /usr/src/main.js
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   mongo-express:
     image: mongo-express
@@ -24,3 +34,7 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongodb
     ports:
       - 8081:8081
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped

@@ -5,7 +5,14 @@ services:
       - ./mongodb:/data/db
     networks:
       - mongo
-  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "'db.runCommand({ping:1})'"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   crud:
     image: ghcr.io/mmi-s4/exemple_crud:main
     build: ./src
@@ -15,8 +22,10 @@ services:
     networks:
       - nginx
       - mongo
+    restart: unless-stopped
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   nginx:
     image: nginx
@@ -29,7 +38,7 @@ services:
       - nginx
     depends_on:
       - crud
-
+    restart: unless-stopped
 configs:
   nginx-config:
     file: ./nginx/crud.conf
