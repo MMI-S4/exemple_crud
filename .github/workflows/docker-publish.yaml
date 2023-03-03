@@ -1,0 +1,62 @@
+# build a docker image 
+# push it on projet registry
+# see https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+name: docker-publish
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - '*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Login against a Docker registry
+      # https://github.com/docker/login-action
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: latest=false
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+
+      # Build and push Docker image with Buildx 
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: | 
+            type=registry,ref=${{ steps.meta.outputs.tags }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          cache-to: type=inline
